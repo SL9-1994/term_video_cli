@@ -88,7 +88,9 @@ impl VideoProcessor {
     ///
     /// The ASCII art representation of the image as a vector of strings.
     pub async fn convert_image_to_ascii_art(&self, img: &DynamicImage) -> Vec<String> {
-        let ascii_brightness = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.'];
+        // let ascii_brightness = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.'];
+        let ascii_brightness = [' ', ' ', ' ', ' ', '+', '*', '?', '%', 'S', '#', '@'];
+
         let (width, height) = img.dimensions();
         let mut ascii_art = Vec::new();
 

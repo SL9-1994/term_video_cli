@@ -7,8 +7,8 @@ use crate::terminal::Terminal;
 
 pub struct VideoProcessor {
     terminal: Terminal,
-    video_path: PathBuf,
-    output_dir: PathBuf,
+    video_path: Option<PathBuf>,
+    output_dir: Option<PathBuf>,
 }
 
 impl VideoProcessor {
@@ -27,14 +27,19 @@ impl VideoProcessor {
     /// ## Panics
     ///
     /// Panics if it fails to create the output directory.
-    pub fn new(video_path: PathBuf, output_dir: PathBuf, terminal: &Terminal) -> Self {
-        let (width, height) = term_size::dimensions().unwrap_or((0, 0));
-        println!("{} {}", width, height);
+    pub fn new(
+        video_path: Option<PathBuf>,
+        output_dir: Option<PathBuf>,
+        terminal: &Terminal,
+    ) -> Self {
+        let (_width, _height) = term_size::dimensions().unwrap_or((0, 0));
 
-        if !output_dir.exists() {
-            fs::create_dir(&output_dir).expect("Failed to create output directory");
-        } else {
-            eprintln!("{} Directory already exists.", output_dir.display());
+        if let Some(dir) = &output_dir {
+            if !dir.exists() {
+                fs::create_dir(dir).expect("Failed to create output directory");
+            } else {
+                eprintln!("{} Directory already exists.", dir.display());
+            }
         }
 
         VideoProcessor {
@@ -59,12 +64,15 @@ impl VideoProcessor {
     /// * Running ffmpeg in a child process.
     /// * Since images are converted at 24 fps, the video may squeeze the capacity or cause unstable conversion and output.
     pub async fn convert_to_grayscale_and_frame(&self) {
-        let output_format = self.output_dir.join("output_%04d.png");
+        let output_format = match &self.output_dir {
+            Some(dir) => dir.join("output_%04d.png"),
+            None => PathBuf::from("output_%04d.png"),
+        };
 
         // fps24で画像生成し、グレースケールに変換した後、ターミナルサイズに合わせて画像をリサイズする。
         let status = Command::new("ffmpeg")
             .arg("-i")
-            .arg(self.video_path.to_str().unwrap())
+            .arg(self.video_path.as_ref().unwrap().to_str().unwrap())
             .arg("-vf")
             .arg(format!(
                 "fps=24, format=gray, scale={}:{}",

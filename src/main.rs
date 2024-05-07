@@ -14,12 +14,16 @@ use crate::downloder::yt_video_downloader;
 #[command(version, about = "This is the terminal_ascii_video drawing CLI with video download capability.", long_about = None)]
 struct Cli {
     /// Specify any YouTube URL to download the video.
-    #[arg(short, long, value_name = "url")]
+    #[arg(short, long, value_name = "URL")]
     url: Option<String>,
 
     /// Enter the path of the video you wish to convert. (Supported extensions: mp4, mkv)
     #[arg(short, long, value_name = "FILE_PATH")]
     file_path: Option<PathBuf>,
+
+    /// Play ascii_video with the converted image already prepared in tmp.
+    #[arg(short, long)]
+    play: bool,
 }
 
 /// Downloads a video from the given URL and returns the path to the downloaded video.
@@ -43,7 +47,7 @@ async fn download_video(url: &str) -> PathBuf {
 async fn process_video(file_path: &PathBuf) {
     let terminal = Terminal::new();
     let tmp_dir = current_dir().unwrap().join("tmp");
-    let processor = VideoProcessor::new(file_path.to_path_buf(), tmp_dir, &terminal);
+    let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
     processor.convert_to_grayscale_and_frame().await;
     let frames = processor.convert_to_ascii_art().await;
     terminal.print_ascii_video(&frames).await;
@@ -59,5 +63,12 @@ async fn main() {
 
     if let Some(file_path) = cli.file_path.as_deref() {
         process_video(&file_path.to_path_buf()).await;
+    }
+
+    if cli.play {
+        let terminal = Terminal::new();
+        let processor = VideoProcessor::new(None, None, &terminal);
+        let frames = processor.convert_to_ascii_art().await;
+        terminal.print_ascii_video(&frames).await;
     }
 }

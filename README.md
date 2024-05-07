@@ -4,6 +4,9 @@
 * **必ずREADMEを最後まで読んでから、使用してください。**  
 * **Be sure to read the README to the end before use.**
 
+## Example
+<img src="example/sample01.png" width="600">
+
 ## Features
 * Ability to download Youtube videos
 * Ascii_video conversion of videos and display in Terminal
@@ -23,6 +26,10 @@
  $ term_video_cli -f [Path_to_downloaded_video_file]
 ```
 
+**※ Ascii_video play only after conversion. (will be played back in the same size as when converted)**
+```zsh
+ $ term_video_cli -p
+```
 ### 2. Build from source code
 1. Clone the repository and build or run
 ```zsh
@@ -39,6 +46,10 @@
  $ cargo run -- -f [Path_to_downloaded_video_file]
 ```
 
+**※ Ascii_video play only after conversion. (will be played back in the same size as when converted)**
+```zsh
+ $ cargo run -- -p
+```
 ## Critical information
 
 ### Japanese
@@ -68,4 +79,4 @@
 * tokio       "1.37.0"
 
 ## License
-This project is licensed under the MIT license.
+This project is licensed under the [MIT license](/LICENSE).

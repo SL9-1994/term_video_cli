@@ -1,2 +1,4 @@
 /target
+/tmp
+*.mp4
 term_video_cli.code-workspace

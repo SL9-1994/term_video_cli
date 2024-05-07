@@ -1,17 +1,17 @@
+#[derive(Clone)]
 pub struct Terminal {
     // terminal_size
-    width: Option<usize>,
-    height: Option<usize>,
+    pub width: Option<usize>,
+    pub height: Option<usize>,
 }
 
 impl Terminal {
     /// Creates a new instance of the Terminal struct.
     ///
-    /// This function initializes the Terminal struct with the current terminal dimensions.
-    /// If the dimensions cannot be determined, it sets the width and height to 0.
+    /// This function initializes a new instance of the Terminal struct with the current terminal dimensions.
     ///
-    /// ### Returns
-    /// The newly created Terminal instance.
+    /// ## Returns
+    /// * A new instance of the Terminal struct.
     pub fn new() -> Self {
         let (width, height) = term_size::dimensions().unwrap_or((0, 0));
         Terminal {
@@ -20,18 +20,35 @@ impl Terminal {
         }
     }
 
-    /// Prints the terminal size in ASCII art.
+    /// Moves the cursor to the top-left corner of the terminal.
     ///
-    /// This function prints the current terminal size using ASCII characters.
-    /// Each ASCII character represents a different brightness level.
-    ///
-    /// ## Arguments
-    /// * None
+    /// This function moves the cursor to the top-left corner of the terminal by printing the appropriate escape sequence.
     ///
     /// ## Returns
     /// * None
-    pub async fn print_term_ascii(&self) {
-        // ASCII characters corresponding to different brightness levels
-        // let ascii_brightness = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.'];
+    pub fn move_cursor_to_top(&self) {
+        print!("\x1B[1;1H");
+    }
+
+    /// Prints an ASCII video to the terminal.
+    ///
+    /// This function prints an ASCII video to the terminal by displaying each frame in the provided frames array.
+    /// It moves the cursor to the top of the terminal before printing each frame, creating the effect of an animated video.
+    /// The frame rate is controlled by sleeping for a specific duration between each frame.
+    ///
+    /// ## Arguments
+    /// * `frames` - A slice of vectors containing strings representing each frame of the video.
+    ///
+    /// ## Returns
+    /// * None
+    pub async fn print_ascii_video(&self, frames: &[Vec<String>]) {
+        for frame in frames {
+            self.move_cursor_to_top();
+            for line in frame {
+                print!("{}", line);
+            }
+            // Sleep for a while to control the frame rate
+            tokio::time::sleep(tokio::time::Duration::from_millis(1000 / 24)).await;
+        }
     }
 }

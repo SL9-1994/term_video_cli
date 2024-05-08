@@ -80,4 +80,4 @@
 * tokio       "1.37.0"
 
 ## License
-This project is licensed under the [MIT license](/LICENSE).
+This project is licensed under the [GPL-3.0 License](/LICENSE).

@@ -18,7 +18,8 @@ struct Cli {
     url: Option<String>,
 
     /// Enter the path of the video you wish to convert. (Supported extensions: mp4, mkv)
-    #[arg(short, long, value_name = "FILE_PATH")]
+    /// Note: Since the conversion is based on the terminal size at the time this option is executed, a terminal of a different size will not be drawn correctly.
+    #[arg(short, long, value_name = "CONVERT_VIDEO_PATH")]
     file_path: Option<PathBuf>,
 
     /// Play ascii_video with the converted image already prepared in tmp.
@@ -39,18 +40,16 @@ async fn download_video(url: &str) -> PathBuf {
     current_dir
 }
 
-/// Processes the video located at the given file path.
+///  Performs the conversion process for the video of the given file path.
 /// Arguments
 /// * `file_path` - The path to the video file to process.
 /// Returns
-/// * None
+/// * `None``
 async fn process_video(file_path: &PathBuf) {
     let terminal = Terminal::new();
     let tmp_dir = current_dir().unwrap().join("tmp");
     let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
     processor.convert_to_grayscale_and_frame().await;
-    let frames = processor.convert_to_ascii_art().await;
-    terminal.print_ascii_video(&frames).await;
 }
 
 #[tokio::main]
@@ -58,7 +57,7 @@ async fn main() {
     let cli = Cli::parse();
 
     if let Some(url) = cli.url.as_deref() {
-        let _video_path = download_video(url).await;
+        download_video(url).await;
     }
 
     if let Some(file_path) = cli.file_path.as_deref() {

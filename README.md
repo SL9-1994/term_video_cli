@@ -14,6 +14,12 @@
 * Resizing and displaying videos to fit the terminal size
 * **Frame rate: 24FPS**
 
+## Assets
+|Asset|Note|
+|---|---|
+|[term_video_cli.exe](https://github.com/SL9-1994/term_video_cli/releases/latest/download/term_video_cli.exe)|x86_64-pc-windows-gnu|
+|[term_video_cli](https://github.com/SL9-1994/term_video_cli/releases/latest/download/term_video_cli)|x86_64-unknown-linux-gnu|
+
 ## Usage
 ### **Prerequisite:** Please have FFmpeg installed in your execution environment.
 

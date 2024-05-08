@@ -15,42 +15,35 @@
 * **Frame rate: 24FPS**
 
 ## Usage
-### 1. executable file
-1. Download the Youtube video you want to convert.
+### **Prerequisite:** Please have FFmpeg installed in your execution environment.
 
+1. download the Youtube video you want to convert with the -u option.
+2. specify the video path with -f option and convert.
+3. start playing the video in the terminal with -p option.
+
+**Example**
 ```zsh
  $ term_video_cli -u [Youtube_video_url]
-```
-2. Pass the path to the video file you just downloaded to the -f option.
-
-```zsh
  $ term_video_cli -f [Path_to_downloaded_video_file]
-```
-
-**※ Ascii_video play only after conversion. (will be played back in the same size as when converted)**
-```zsh
  $ term_video_cli -p
 ```
-### 2. Build from source code
-1. Clone the repository and build or run
+
+**Help**
 ```zsh
- $ git clone https://github.com/SL9-1994/term_video_cli.git
+ $ term_video_cli --help
+
+ This is the terminal_ascii_video drawing CLI with video download capability.
+ 
+ Usage: term_video_cli [OPTIONS]
+ 
+ Options:
+   -u, --url <URL>                       Specify any YouTube URL to download the video
+   -f, --file-path <CONVERT_VIDEO_PATH>  Enter the path of the video you wish to convert. (Supported extensions: mp4, mkv) Note: Since the conversion is based on the terminal size at the time this option is executed, a terminal of a different size will not be drawn correctly
+   -p, --play                            Play ascii_video with the converted image already prepared in tmp
+   -h, --help                            Print help
+   -V, --version                         Print version
 ```
 
-2. Download the Youtube video you want to convert.
-```zsh
- $ cargo run -- -u [Youtube_video_url]
-```
-
-3. Pass the path to the video file you just downloaded to the -f option.
-```zsh
- $ cargo run -- -f [Path_to_downloaded_video_file]
-```
-
-**※ Ascii_video play only after conversion. (will be played back in the same size as when converted)**
-```zsh
- $ cargo run -- -p
-```
 ## Critical information
 
 ### Japanese

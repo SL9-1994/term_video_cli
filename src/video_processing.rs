@@ -86,6 +86,29 @@ impl VideoProcessor {
         assert!(status.success());
     }
 
+    pub async fn convert_to_grayscale_and_resize(&self) {
+        let output_format = match &self.output_dir {
+            Some(dir) => dir.join("single_output.png"),
+            None => PathBuf::from("single_output.png"),
+        };
+
+        // fps24で画像生成し、グレースケールに変換した後、ターミナルサイズに合わせて画像をリサイズする。
+        let status = Command::new("ffmpeg")
+            .arg("-i")
+            .arg(self.video_path.as_ref().unwrap().to_str().unwrap())
+            .arg("-vf")
+            .arg(format!(
+                "format=gray, scale={}:{}",
+                self.terminal.width.unwrap(),
+                self.terminal.height.unwrap()
+            ))
+            .arg(output_format.to_str().unwrap())
+            .status()
+            .expect("Failed to execute command");
+
+        assert!(status.success());
+    }
+
     /// Converts the image to ASCII art representation.
     ///
     /// ## Arguments
@@ -96,8 +119,8 @@ impl VideoProcessor {
     ///
     /// The ASCII art representation of the image as a vector of strings.
     pub async fn convert_image_to_ascii_art(&self, img: &DynamicImage) -> Vec<String> {
-        // let ascii_brightness = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.'];
-        let ascii_brightness = [' ', ' ', ' ', ' ', '+', '*', '?', '%', 'S', '#', '@'];
+        let ascii_brightness = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.'];
+        // let ascii_brightness = [' ', ' ', ' ', ' ', '+', '*', '?', '%', 'S', '#', '@'];
 
         let (width, height) = img.dimensions();
         let mut ascii_art = Vec::new();

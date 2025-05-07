@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::Duration};
+
 #[derive(Clone)]
 pub struct Terminal {
     // terminal_size
@@ -41,14 +43,14 @@ impl Terminal {
     ///
     /// ## Returns
     /// * None
-    pub async fn print_ascii_video(&self, frames: &[Vec<String>]) {
+    pub fn print_ascii_video(&self, frames: &[Vec<String>]) {
         for frame in frames {
             self.move_cursor_to_top();
             for line in frame {
                 print!("{}", line);
             }
             // Sleep for a while to control the frame rate
-            tokio::time::sleep(tokio::time::Duration::from_millis(1000 / 24)).await;
+            sleep(Duration::from_millis(1000 / 24));
         }
     }
 }

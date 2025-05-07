@@ -43,7 +43,6 @@
  Usage: term_video_cli [OPTIONS]
  
  Options:
-   -u, --url <URL>                       Specify any YouTube URL to download the video
    -f, --file-path <CONVERT_VIDEO_PATH>  Enter the path of the video you wish to convert. (Supported extensions: mp4, mkv) Note: Since the conversion is based on the terminal size at the time this option is executed, a terminal of a different size will not be drawn correctly
    -p, --play                            Play ascii_video with the converted image already prepared in tmp
    -h, --help                            Print help

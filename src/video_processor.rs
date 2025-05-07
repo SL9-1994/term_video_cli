@@ -63,7 +63,7 @@ impl VideoProcessor {
     ///
     /// * Running ffmpeg in a child process.
     /// * Since images are converted at 24 fps, the video may squeeze the capacity or cause unstable conversion and output.
-    pub async fn convert_to_grayscale_and_frame(&self) {
+    pub fn convert_to_grayscale_and_frame(&self) {
         let output_format = match &self.output_dir {
             Some(dir) => dir.join("output_%04d.png"),
             None => PathBuf::from("output_%04d.png"),
@@ -86,7 +86,7 @@ impl VideoProcessor {
         assert!(status.success());
     }
 
-    pub async fn convert_to_grayscale_and_resize(&self) {
+    pub fn convert_to_grayscale_and_resize(&self) {
         let output_format = match &self.output_dir {
             Some(dir) => dir.join("single_output.png"),
             None => PathBuf::from("single_output.png"),
@@ -118,9 +118,8 @@ impl VideoProcessor {
     /// ## Returns
     ///
     /// The ASCII art representation of the image as a vector of strings.
-    pub async fn convert_image_to_ascii_art(&self, img: &DynamicImage) -> Vec<String> {
+    pub fn convert_image_to_ascii_art(&self, img: &DynamicImage) -> Vec<String> {
         let ascii_brightness = ['@', '#', 'S', '%', '?', '*', '+', ';', ':', ',', '.'];
-        // let ascii_brightness = [' ', ' ', ' ', ' ', '+', '*', '?', '%', 'S', '#', '@'];
 
         let (width, height) = img.dimensions();
         let mut ascii_art = Vec::new();
@@ -130,7 +129,7 @@ impl VideoProcessor {
             for x in 0..width {
                 let pixel = img.get_pixel(x, y);
                 let brightness = pixel.to_luma()[0];
-                let ascii_char = Self::map_brightness_to_ascii(brightness, &ascii_brightness).await;
+                let ascii_char = Self::map_brightness_to_ascii(brightness, &ascii_brightness);
                 line.push(ascii_char);
             }
             ascii_art.push(line);
@@ -144,7 +143,7 @@ impl VideoProcessor {
     /// ## Returns
     ///
     /// The ASCII art representation of the video frames as a vector of vectors of strings.
-    pub async fn convert_to_ascii_art(&self) -> Vec<Vec<String>> {
+    pub fn convert_to_ascii_art(&self) -> Vec<Vec<String>> {
         let mut entries: Vec<_> = fs::read_dir("./tmp").unwrap().collect();
         entries.sort_by_key(|e| e.as_ref().unwrap().path().display().to_string());
         let mut frames = Vec::new();
@@ -154,7 +153,7 @@ impl VideoProcessor {
             let path = entry.path();
             if path.is_file() && path.extension().unwrap_or_default() == "png" {
                 let img = image::open(&Path::new(&path)).unwrap();
-                let ascii_art = self.convert_image_to_ascii_art(&img).await;
+                let ascii_art = self.convert_image_to_ascii_art(&img);
                 frames.push(ascii_art);
             }
         }
@@ -172,7 +171,7 @@ impl VideoProcessor {
     /// ## Returns
     ///
     /// The ASCII character corresponding to the brightness value.
-    pub async fn map_brightness_to_ascii(brightness: u8, ascii_brightness: &[char]) -> char {
+    pub fn map_brightness_to_ascii(brightness: u8, ascii_brightness: &[char]) -> char {
         let scale: usize = ascii_brightness.len() - 1;
         let index = (brightness as f32 / 255.0 * scale as f32).round() as usize;
         ascii_brightness[index]

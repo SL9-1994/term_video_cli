@@ -1,22 +1,14 @@
 use clap::Parser;
 use std::{env::current_dir, path::PathBuf};
 use terminal::Terminal;
-use video_processing::VideoProcessor;
+use video_processor::VideoProcessor;
 
-mod downloder;
 mod terminal;
-mod video_processing;
+mod video_processor;
 
-use crate::downloder::yt_video_downloader;
-
-/// Command line arguments for the CLI.
 #[derive(Parser)]
-#[command(version, about = "This is the terminal_ascii_video drawing CLI with video download capability.", long_about = None)]
+#[command(version, about = "This CLI can draw and play arbitrary videos and images to the terminal.", long_about = None)]
 struct Cli {
-    /// Specify any YouTube URL to download the video.
-    #[arg(short, long, value_name = "URL")]
-    url: Option<String>,
-
     /// Enter the path of the video you wish to convert. (Supported extensions: mp4, mkv...)
     /// Note: Since the conversion is based on the terminal size at the time this option is executed, a terminal of a different size will not be drawn correctly.
     #[arg(short, long, value_name = "CONVERT_VIDEO_PATH")]
@@ -32,29 +24,16 @@ struct Cli {
     play: bool,
 }
 
-/// Downloads a video from the given URL and returns the path to the downloaded video.
-/// Arguments
-/// * `url` - The URL of the video to download.
-/// Returns
-/// * The path to the downloaded video.
-async fn download_video(url: &str) -> PathBuf {
-    let local_video_path = yt_video_downloader(url.to_string()).await;
-    let mut current_dir: PathBuf = current_dir().unwrap();
-    current_dir.push(local_video_path);
-    println!("The downloaded video path is {:?}", current_dir);
-    current_dir
-}
-
 ///  Performs the conversion process for the video of the given file path.
 /// Arguments
 /// * `file_path` - The path to the video file to process.
 /// Returns
 /// * `None`
-async fn process_video(file_path: &PathBuf) {
+fn process_video(file_path: &PathBuf) {
     let terminal = Terminal::new();
     let tmp_dir = current_dir().unwrap().join("tmp");
     let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
-    processor.convert_to_grayscale_and_frame().await;
+    processor.convert_to_grayscale_and_frame();
 }
 
 /// Performs the conversion process for the image of the given file path.
@@ -62,33 +41,28 @@ async fn process_video(file_path: &PathBuf) {
 /// * `file_path` - The path to the image file to process.
 /// Returns
 /// * `None`
-async fn process_image(file_path: &PathBuf) {
+fn process_image(file_path: &PathBuf) {
     let terminal = Terminal::new();
     let tmp_dir = current_dir().unwrap().join("tmp");
-    let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
-    processor.convert_to_grayscale_and_resize().await;
+    let v_processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
+    v_processor.convert_to_grayscale_and_resize();
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let cli = Cli::parse();
 
-    if let Some(url) = cli.url.as_deref() {
-        download_video(url).await;
+    if let Some(file_path) = cli.file_path {
+        process_video(&file_path.to_path_buf());
     }
 
-    if let Some(file_path) = cli.file_path.as_deref() {
-        process_video(&file_path.to_path_buf()).await;
-    }
-
-    if let Some(image_path) = cli.image_path.as_deref() {
-        process_image(&image_path.to_path_buf()).await;
+    if let Some(image_path) = cli.image_path {
+        process_image(&image_path.to_path_buf());
     }
 
     if cli.play {
         let terminal = Terminal::new();
         let processor = VideoProcessor::new(None, None, &terminal);
-        let frames = processor.convert_to_ascii_art().await;
-        terminal.print_ascii_video(&frames).await;
+        let frames = processor.convert_to_ascii_art();
+        terminal.print_ascii_video(&frames);
     }
 }

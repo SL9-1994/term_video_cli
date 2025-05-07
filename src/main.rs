@@ -6,9 +6,8 @@ use video_processor::VideoProcessor;
 mod terminal;
 mod video_processor;
 
-/// Command line arguments for the CLI.
 #[derive(Parser)]
-#[command(version, about = "This is the terminal_ascii_video drawing CLI with video download capability.", long_about = None)]
+#[command(version, about = "This CLI can draw and play arbitrary videos and images to the terminal.", long_about = None)]
 struct Cli {
     /// Enter the path of the video you wish to convert. (Supported extensions: mp4, mkv...)
     /// Note: Since the conversion is based on the terminal size at the time this option is executed, a terminal of a different size will not be drawn correctly.
@@ -45,8 +44,8 @@ fn process_video(file_path: &PathBuf) {
 fn process_image(file_path: &PathBuf) {
     let terminal = Terminal::new();
     let tmp_dir = current_dir().unwrap().join("tmp");
-    let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
-    processor.convert_to_grayscale_and_resize();
+    let v_processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_dir), &terminal);
+    v_processor.convert_to_grayscale_and_resize();
 }
 
 fn main() {

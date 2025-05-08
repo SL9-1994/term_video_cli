@@ -10,12 +10,14 @@ macro_rules! bail_on_error {
     }};
 }
 
-// トップレベルカスタムエラー
 #[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum AppError {
     #[error("CLI> {0}")]
     Cli(#[from] CliErr),
+
+    #[error("Processor> {0}")]
+    Process(#[from] ProcessErr),
 }
 
 impl AppError {
@@ -28,6 +30,7 @@ impl AppError {
     pub fn exit_code(&self) -> i32 {
         match self {
             Self::Cli(e) => e.exit_code(),
+            Self::Process(e) => e.exit_code(),
         }
     }
 }
@@ -64,4 +67,19 @@ pub enum ArgsValidationErr {
 
     #[error("Oops! It contains invalid character encoding, please change to UTF8 : {0}")]
     InvalidCharCode(PathBuf),
+}
+
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum ProcessErr {
+    #[error("I/O> {0}")]
+    Io(#[from] std::io::Error),
+}
+
+impl ProcessErr {
+    pub fn exit_code(&self) -> i32 {
+        match self {
+            Self::Io(_) => 1,
+        }
+    }
 }

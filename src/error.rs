@@ -18,6 +18,9 @@ pub enum AppError {
 
     #[error("Processor> {0}")]
     Process(#[from] ProcessErr),
+
+    #[error("Terminal> {0}")]
+    Terminal(#[from] TerminalErr),
 }
 
 impl AppError {
@@ -31,6 +34,7 @@ impl AppError {
         match self {
             Self::Cli(e) => e.exit_code(),
             Self::Process(e) => e.exit_code(),
+            Self::Terminal(e) => e.exit_code(),
         }
     }
 }
@@ -82,4 +86,26 @@ impl ProcessErr {
             Self::Io(_) => 1,
         }
     }
+}
+
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum TerminalErr {
+    #[error("Dimension> {0}")]
+    Dimension(#[from] DimensionErr),
+}
+
+impl TerminalErr {
+    pub fn exit_code(&self) -> i32 {
+        match self {
+            Self::Dimension(_) => 3,
+        }
+    }
+}
+
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum DimensionErr {
+    #[error("Oops! Failed to get terminal size.")]
+    SizeUnavailable(),
 }

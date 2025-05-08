@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::{path::PathBuf, process::Command};
 
+use crate::error::{ConvertErr, ProcessErr};
 use crate::terminal::Terminal;
 
 pub struct VideoProcessor {
@@ -31,22 +32,23 @@ impl VideoProcessor {
         video_path: Option<PathBuf>,
         output_dir: Option<PathBuf>,
         terminal: &Terminal,
-    ) -> Self {
-        let (_width, _height) = term_size::dimensions().unwrap_or((0, 0));
-
+    ) -> Result<Self, ProcessErr> {
         if let Some(dir) = &output_dir {
             if !dir.exists() {
-                fs::create_dir(dir).expect("Failed to create output directory");
+                fs::create_dir(dir)?;
             } else {
-                eprintln!("{} Directory already exists.", dir.display());
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::AlreadyExists,
+                    format!("{} Directory already exists.", dir.display()),
+                ))?;
             }
         }
 
-        VideoProcessor {
+        Ok(VideoProcessor {
             video_path,
             output_dir,
             terminal: terminal.clone(),
-        }
+        })
     }
 
     /// Converts the video to a grayscale image at 24 fps.
@@ -63,7 +65,7 @@ impl VideoProcessor {
     ///
     /// * Running ffmpeg in a child process.
     /// * Since images are converted at 24 fps, the video may squeeze the capacity or cause unstable conversion and output.
-    pub fn convert_to_grayscale_and_frame(&self) {
+    pub fn convert_to_grayscale_and_frame(&self) -> Result<(), ProcessErr> {
         let output_format = match &self.output_dir {
             Some(dir) => dir.join("output_%04d.png"),
             None => PathBuf::from("output_%04d.png"),
@@ -72,21 +74,30 @@ impl VideoProcessor {
         // fps24で画像生成し、グレースケールに変換した後、ターミナルサイズに合わせて画像をリサイズする。
         let status = Command::new("ffmpeg")
             .arg("-i")
-            .arg(self.video_path.as_ref().unwrap().to_str().unwrap())
+            .arg(
+                self.video_path
+                    .as_ref()
+                    .unwrap()
+                    .to_str()
+                    .expect("failed to get video path"),
+            )
             .arg("-vf")
             .arg(format!(
-                "fps=24, format=gray, scale={}:{}",
-                self.terminal.width.unwrap(),
-                self.terminal.height.unwrap()
+                "format=gray, scale={}:{}",
+                self.terminal.width.expect("failed to get terminal width"),
+                self.terminal.height.expect("failed to get terminal height")
             ))
-            .arg(output_format.to_str().unwrap())
-            .status()
-            .expect("Failed to execute command");
+            .arg(output_format.to_str().expect("failed to get output format"))
+            .status();
 
-        assert!(status.success());
+        match status {
+            Ok(status) if status.success() => Ok(()), // 成功の場合
+            Ok(status) => Err(ConvertErr::FfmpegUnexpectedExitStatus(status))?, // 非正常終了
+            Err(e) => Err(ConvertErr::FfmpegCommandFailed(Box::new(e)))?, // コマンド自体の実行失敗
+        }
     }
 
-    pub fn convert_to_grayscale_and_resize(&self) {
+    pub fn convert_to_grayscale_and_resize(&self) -> Result<(), ProcessErr> {
         let output_format = match &self.output_dir {
             Some(dir) => dir.join("single_output.png"),
             None => PathBuf::from("single_output.png"),
@@ -95,18 +106,27 @@ impl VideoProcessor {
         // fps24で画像生成し、グレースケールに変換した後、ターミナルサイズに合わせて画像をリサイズする。
         let status = Command::new("ffmpeg")
             .arg("-i")
-            .arg(self.video_path.as_ref().unwrap().to_str().unwrap())
+            .arg(
+                self.video_path
+                    .as_ref()
+                    .unwrap()
+                    .to_str()
+                    .expect("failed to get video path"),
+            )
             .arg("-vf")
             .arg(format!(
                 "format=gray, scale={}:{}",
-                self.terminal.width.unwrap(),
-                self.terminal.height.unwrap()
+                self.terminal.width.expect("failed to get terminal width"),
+                self.terminal.height.expect("failed to get terminal height")
             ))
-            .arg(output_format.to_str().unwrap())
-            .status()
-            .expect("Failed to execute command");
+            .arg(output_format.to_str().expect("failed to get output format"))
+            .status();
 
-        assert!(status.success());
+        match status {
+            Ok(status) if status.success() => Ok(()), // 成功の場合
+            Ok(status) => Err(ConvertErr::FfmpegUnexpectedExitStatus(status))?, // 非正常終了
+            Err(e) => Err(ConvertErr::FfmpegCommandFailed(Box::new(e)))?, // コマンド自体の実行失敗
+        }
     }
 
     /// Converts the image to ASCII art representation.
@@ -143,8 +163,8 @@ impl VideoProcessor {
     /// ## Returns
     ///
     /// The ASCII art representation of the video frames as a vector of vectors of strings.
-    pub fn convert_to_ascii_art(&self) -> Vec<Vec<String>> {
-        let mut entries: Vec<_> = fs::read_dir("./tmp").unwrap().collect();
+    pub fn convert_to_ascii_art(&self) -> Result<Vec<Vec<String>>, ProcessErr> {
+        let mut entries: Vec<_> = fs::read_dir("./tmp")?.collect();
         entries.sort_by_key(|e| e.as_ref().unwrap().path().display().to_string());
         let mut frames = Vec::new();
 
@@ -158,7 +178,7 @@ impl VideoProcessor {
             }
         }
 
-        frames
+        Ok(frames)
     }
 
     /// Maps the brightness value to an ASCII character.

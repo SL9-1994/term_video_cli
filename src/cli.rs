@@ -52,8 +52,12 @@ impl Cli {
         let file_ext_str = file_ext
             .to_str()
             .ok_or_else(|| ArgsValidationErr::InvalidCharCode(file_path.to_path_buf()))?;
+        let file_ext_lower = file_ext_str.to_lowercase();
 
-        if !SUPPORTED_VIDEO_EXTS.contains(&file_ext_str) {
+        if !SUPPORTED_VIDEO_EXTS
+            .iter()
+            .any(|ext| ext == &file_ext_lower)
+        {
             Err(ArgsValidationErr::InvalidExtension(
                 file_ext_str.to_string(),
                 SUPPORTED_VIDEO_EXTS.join(", "),
@@ -79,8 +83,12 @@ impl Cli {
         let file_ext_str = file_ext
             .to_str()
             .ok_or_else(|| ArgsValidationErr::InvalidCharCode(file_path.to_path_buf()))?;
+        let file_ext_lower = file_ext_str.to_lowercase();
 
-        if !SUPPORTED_IMAGE_EXTS.contains(&file_ext_str) {
+        if !SUPPORTED_IMAGE_EXTS
+            .iter()
+            .any(|ext| ext == &file_ext_lower)
+        {
             Err(ArgsValidationErr::InvalidExtension(
                 file_ext_str.to_string(),
                 SUPPORTED_IMAGE_EXTS.join(", "),

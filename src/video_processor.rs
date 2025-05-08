@@ -169,7 +169,7 @@ impl VideoProcessor {
         let mut frames = Vec::new();
 
         for entry in entries {
-            let entry = entry.unwrap();
+            let entry = entry?;
             let path = entry.path();
             if path.is_file() && path.extension().unwrap_or_default() == "png" {
                 let img = image::open(&Path::new(&path)).unwrap();

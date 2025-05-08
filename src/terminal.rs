@@ -1,5 +1,7 @@
 use std::{thread::sleep, time::Duration};
 
+use crate::error::{DimensionErr, TerminalErr};
+
 #[derive(Clone)]
 pub struct Terminal {
     // terminal_size
@@ -14,12 +16,12 @@ impl Terminal {
     ///
     /// ## Returns
     /// * A new instance of the Terminal struct.
-    pub fn new() -> Self {
-        let (width, height) = term_size::dimensions().unwrap_or((0, 0));
-        Terminal {
+    pub fn new() -> Result<Self, TerminalErr> {
+        let (width, height) = term_size::dimensions().ok_or(DimensionErr::SizeUnavailable())?;
+        Ok(Terminal {
             width: Some(width),
             height: Some(height),
-        }
+        })
     }
 
     /// Moves the cursor to the top-left corner of the terminal.

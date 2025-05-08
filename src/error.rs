@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, process::ExitStatus};
 
 use colored::Colorize;
 use thiserror::Error;
@@ -78,12 +78,16 @@ pub enum ArgsValidationErr {
 pub enum ProcessErr {
     #[error("I/O> {0}")]
     Io(#[from] std::io::Error),
+
+    #[error("Conveter> {0}")]
+    Convert(#[from] ConvertErr),
 }
 
 impl ProcessErr {
     pub fn exit_code(&self) -> i32 {
         match self {
             Self::Io(_) => 1,
+            Self::Convert(_) => 1,
         }
     }
 }
@@ -108,4 +112,14 @@ impl TerminalErr {
 pub enum DimensionErr {
     #[error("Oops! Failed to get terminal size.")]
     SizeUnavailable(),
+}
+
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum ConvertErr {
+    #[error("Oops! ffmpeg has terminated non-normally: {0}")]
+    FfmpegUnexpectedExitStatus(ExitStatus),
+
+    #[error("Oops! ffmpeg has terminated non-normally. {0}")]
+    FfmpegCommandFailed(#[source] Box<dyn std::error::Error>), // Use Box<dyn std::error::Error>
 }

@@ -23,7 +23,10 @@ fn main() {
 
 fn run() -> Result<(), AppError> {
     let cli = Cli::new();
-    cli.validate()?;
+    // -pオプションオンリーの場合は関係のないバリデーションを行わない
+    if !cli.play && cli.file_path.is_none() || !cli.image_path.is_none() {
+        cli.validate()?;
+    }
 
     let terminal = Terminal::new()?;
     let tmp_path = get_tmp_dir()?;
@@ -42,8 +45,8 @@ fn run() -> Result<(), AppError> {
 
     if cli.play {
         let terminal = Terminal::new()?;
-        let processor = VideoProcessor::new(None, None, &terminal);
-        let frames = processor.convert_to_ascii_art();
+        let processor = VideoProcessor::new(None, None, &terminal)?;
+        let frames = processor.convert_to_ascii_art()?;
         terminal.print_ascii_video(&frames);
     }
 
@@ -60,8 +63,8 @@ fn process_video(
     tmp_path: PathBuf,
     terminal: Terminal,
 ) -> Result<(), ProcessErr> {
-    let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_path), &terminal);
-    processor.convert_to_grayscale_and_frame();
+    let processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_path), &terminal)?;
+    processor.convert_to_grayscale_and_frame()?;
     Ok(())
 }
 
@@ -75,7 +78,8 @@ fn process_image(
     tmp_path: PathBuf,
     terminal: Terminal,
 ) -> Result<(), ProcessErr> {
-    let v_processor = VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_path), &terminal);
-    v_processor.convert_to_grayscale_and_resize();
+    let v_processor =
+        VideoProcessor::new(Some(file_path.to_path_buf()), Some(tmp_path), &terminal)?;
+    v_processor.convert_to_grayscale_and_resize()?;
     Ok(())
 }

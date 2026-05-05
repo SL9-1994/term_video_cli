@@ -30,6 +30,7 @@
       # 個別の cargo や rustc の代わりに、生成したツールチェーンを指定する
       buildInputs = [
         rustToolchain
+        pkgs.ffmpeg
       ];
 
       # RUST_SRC_PATHをオーバーレイで生成された環境に合わせる

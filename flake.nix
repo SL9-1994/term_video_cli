@@ -31,6 +31,12 @@
       buildInputs = [
         rustToolchain
         pkgs.ffmpeg
+        pkgs.alsa-lib
+      ];
+
+      nativeBuildInputs = [
+        pkgs.pkg-config
+        pkgs.rustPlatform.bindgenHook
       ];
 
       # RUST_SRC_PATHをオーバーレイで生成された環境に合わせる
